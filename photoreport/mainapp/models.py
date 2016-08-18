@@ -5,6 +5,8 @@ from django.conf import settings
 from django.core.files import File
 from zipfile import ZipFile
 from io import BytesIO
+from PIL import Image as PImage
+from django.core.files.uploadedfile import SimpleUploadedFile
 import os
 
 from .validators import validate_file_extension, validate_image_extension
@@ -23,6 +25,68 @@ class Image(models.Model):
     def __str__(self):
         return str(self.caption + ' ' + str(self.id))\
             if self.caption else str(self.id)
+
+    def create_thumbnail(self):
+        # original code for this method came from
+        # http://snipt.net/danfreak/generate-thumbnails-in-django-with-pil/
+
+        # If there is no image associated with this.
+        # do not create thumbnail
+        if not self.image:
+            return
+
+        # Set our max thumbnail size in a tuple (max width, max height)
+        thumbnail_size = (120, 120)
+
+        # django_type = self.image.file.content_type
+
+        # if django_type == 'image/jpeg':
+        #     pillow_type = 'jpeg'
+        #     file_extension = 'jpg'
+        # elif django_type == 'image/png':
+        django_type = 'image/png'
+        pillow_type = 'png'
+        file_extension = 'png'
+
+        # Open original photo which we want to thumbnail using PIL's Image
+        image = PImage.open(BytesIO(self.image.read()))
+
+        # We use our PIL Image object to create the thumbnail, which already
+        # has a thumbnail() convenience method that contrains proportions.
+        # Additionally, we use Image.ANTIALIAS to make the image look better.
+        # Without antialiasing the image pattern artifacts may result.
+        image.thumbnail(thumbnail_size, PImage.ANTIALIAS)
+
+        # Save the thumbnail
+        temp_handle = BytesIO()
+        image.save(temp_handle, pillow_type)
+        temp_handle.seek(0)
+
+        # Save image to a SimpleUploadedFile which can be saved into
+        # ImageField
+        suf = SimpleUploadedFile(
+            os.path.split(self.image.name)[-1],
+            temp_handle.read(), content_type=django_type)
+        # Save SimpleUploadedFile into image field
+        self.thumbnail.save(
+            '%s_thumbnail.%s' % (
+                os.path.splitext(suf.name)[0],
+                file_extension),
+            suf,
+            save=False
+        )
+
+    def save(self, *args, **kwargs):
+        self.create_thumbnail()
+        force_update = False
+        # If the instance already has been saved, it has an id and we set
+        # force_update to True
+        if self.id:
+            force_update = True
+
+        # Force an UPDATE SQL query if we're editing the image
+        # to avoid integrity exception
+        super(Image, self).save(force_update=force_update)
 
 
 class Project(models.Model):

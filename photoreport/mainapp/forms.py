@@ -1,5 +1,6 @@
 from django import forms
 import json
+from zipfile import ZipFile
 
 from .models import InputFile
 
@@ -21,6 +22,23 @@ class InputForm(forms.ModelForm):
         fields = (
             'zip_file',
         )
+
+    def clean_zip_file(self):
+        myfile = self.cleaned_data['zip_file']
+        archive = ZipFile(myfile, 'r')
+        photos = archive.namelist()
+        valid_extensions = [
+            '.png', '.jpg', '.gif', '.bmp', '.jpeg'
+        ]
+        valid_files = [
+            i for i in photos if '.' +
+            i.split('.')[-1] in valid_extensions
+        ]
+        if not valid_files:
+            raise forms.ValidationError(
+                "Image not found in zip."
+            )
+        return myfile
 
 
 class TempFileForm(forms.Form):
@@ -45,6 +63,7 @@ class TempFileForm(forms.Form):
             )
         else:
             self.data = input_file_id
+        return temp_file
 
     def parse_data(self, temp_file):
         contents = temp_file.read().decode('utf-8')

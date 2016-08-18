@@ -17,8 +17,15 @@ class DocumentGenerator(object):
             img_full_url = os.path.join(
                 settings.MEDIA_ROOT, image.image.url.split('/media/')[1]
             )
-            document.add_picture(img_full_url, width=Inches(5.25))
+            img_width = image.image.width
+            if img_width > 500:
+                width = Inches(4)
+            else:
+                width = None
+            if width:
+                document.add_picture(img_full_url, width=width)
+            else:
+                document.add_picture(img_full_url)
             document.add_page_break()
-
         # document.save(file_name)
         return document

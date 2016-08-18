@@ -89,7 +89,7 @@ class PhotoPreview(View):
             img.caption = value[0]
             img.save()
         return HttpResponseRedirect(
-            reverse_lazy('success', kwargs={'pk': input_file.project.id})
+            reverse_lazy('success', kwargs={'pk': input_file.id})
         )
 
 

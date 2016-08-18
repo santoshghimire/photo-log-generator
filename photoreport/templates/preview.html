@@ -17,7 +17,7 @@
     	<div class="col-md-4">
             <ul id="sortable">
             {% for image in images %}
-			  <li class="ui-state-default" id="{{image.id}}" onclick="process_image('{{image.image.url}}', '{{image.id}}', 'false')"><img src="{{image.image.url}}" width="100px;"></li>
+			  <li id="{{image.id}}" onclick="process_image('{{image.image.url}}', '{{image.id}}', 'false')" style="width:120px;height:120px;"><img src="{{image.thumbnail.url}}"></li>
 			 {% endfor %}
 			</ul>
 
