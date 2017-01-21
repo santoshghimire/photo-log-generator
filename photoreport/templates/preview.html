@@ -15,11 +15,15 @@
         <form action="." method="POST">{% csrf_token %}
 
     	<div class="col-md-4">
+        <div class="row" style="overflow-y: scroll;height: 500px;width: 480px;">
+          <div class="col-md-12">    
             <ul id="sortable">
-            {% for image in images %}
-			  <li id="{{image.id}}" onclick="process_image('{{image.image.url}}', '{{image.id}}', 'false')" style="width:120px;height:120px;"><img src="{{image.thumbnail.url}}"></li>
-			 {% endfor %}
-			</ul>
+                  {% for image in images %}
+              <li id="{{image.id}}" onclick="process_image('{{image.image.url}}', '{{image.id}}', 'false')" style="width:120px;height:120px;"><img src="{{image.thumbnail.url}}"></li>
+             {% endfor %}
+            </ul>
+            </div>
+        </div>
 
         <div class="row">
             <div class="col-md-8 col-md-offset-2" style="margin-bottom: 10px;margin-top:15px;">
@@ -59,7 +63,7 @@ $( document ).ready(function() {
 });
 
 
-  function process_image(img_url, img_id, initial) {
+function process_image(img_url, img_id, initial) {
   	if(initial == 'true'){
 		  $("#sortable").sortable();
       $("#sortable").disableSelection();
@@ -72,11 +76,12 @@ $( document ).ready(function() {
   	$(".caption").not("#caption_" + img_id).hide();
   	$("#caption_" + img_id).show();
 
-  }
+}
 function post_image_order(image_order) {
 	var url = "/api/project/" + "{{project.id}}/";
 	var img_order_str = image_order.join(',');
 	data = {image_order: img_order_str};
+  console.log('data', data);
    $.ajax({
         url: url,
         type: "PUT",

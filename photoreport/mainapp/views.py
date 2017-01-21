@@ -1,7 +1,6 @@
 from django.views.generic import FormView, View
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, get_object_or_404
-# from PIL import Image as PImage
 from datetime import datetime
 from django.http import HttpResponse, HttpResponseRedirect
 from io import BytesIO
